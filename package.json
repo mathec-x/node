@@ -1,0 +1,13 @@
+{
+	"name": "ciclo",
+	"version": "1.0",
+	"private": true,
+	"dependencies": {
+	    "express": "^4.16.3",
+	    "socket.io": "^2.1.1"
+	 },
+	 "scripts":{
+		"starts": "server.js",
+		"dev": "npm run server"
+	 }
+}
