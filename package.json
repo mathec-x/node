@@ -1,6 +1,11 @@
 {
-	"name": "ciclo",
+	"name": "Ciclo.io",
 	"version": "1.0.1",
+	"private": true,
+	"repository": {
+		"type": "git",
+		"url": "git://github.com/mathec-x/node.git"
+	},
 	"dependencies": {
 		"express": "^4.16.3",
 		"socket.io": "^2.1.1"
