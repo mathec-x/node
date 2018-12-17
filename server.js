@@ -1,34 +1,42 @@
 var app= require('express')();
 var http=require('http').Server(app);
-var io=require('socket.io')(http);
+var io = require('socket.io')(http);
 var port = 3000;
-//process.env.PORT ||
+var ConnUsers = [];
 
-// app.get('/', (req,res)=>{
-// 	console.log(__dirname);
-// 	res.sendFile(__dirname+'/realtime/index.php');
-// })
+//ONLY FOR SECURITY
+//npm install --save helmet
+var helmet = require('helmet');
+	app.use(helmet());
+
 var totalUsers = 0;
 
 io.on('connection', function(socket) {
-	totalUsers++;
-	console.log(totalUsers);
-	
 //	console.log(socket.id);     
-	 socket.on('Pack', (newpackage)=>{
-//	  	socket.broadcast.emit('Pack', newpackage);
-		io.emit('Pack', newpackage);
+	function showusers(){
+		console.clear();
+		var socketsOn = [];
+		 for (var i = ConnUsers.length - 1; i >= 0; i--) {
+		 	socketsOn.push(ConnUsers[i].handshake.query);
+		 }
+		   	 return socketsOn;
+	}
 
-	  });
 
-	 socket.on('NewMessage', (message)=>{
-		io.emit('NewMessage', message);
-	  });
+	ConnUsers.push(socket);	
+	console.log(showusers());
+	totalUsers++;
 
-	 socket.on('KreatorPush', (newitems)=>{
-	 	console.log(newitems);
-		io.emit('KreatorPush', newitems);
-	  });
+    socket.on('disconnect', function() {
+		  totalUsers--;
+	      ConnUsers.splice(ConnUsers.indexOf(socket), 1);
+	      console.log(showusers());
+	});
+
+	socket.on('Package', (newpackage)=>{
+		io.emit('Package', newpackage);
+
+	});
 });
 
 http.listen(port, function(){

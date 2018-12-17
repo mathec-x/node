@@ -1,16 +1,17 @@
 {
 	"name": "Ciclo.io",
-	"version": "1.0.1",
+	"version": "1.0.2",
 	"private": true,
 	"repository": {
 		"type": "git",
 		"url": "git://github.com/mathec-x/node.git"
 	},
-	 "engines": {
-	    "node": "8.11.1"
-	 },
+	"engines": {
+		"node": "8.11.1"
+	},
 	"dependencies": {
 		"express": "^4.16.3",
+		"helmet": "^3.15.0",
 		"socket.io": "^2.1.1"
 	},
 	"scripts": {
