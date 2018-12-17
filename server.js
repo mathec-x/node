@@ -12,7 +12,10 @@ var helmet = require('helmet');
 var totalUsers = 0;
 
 io.on('connection', function(socket) {
-//	console.log(socket.id);     
+	//include socket on JobId
+	var newjoin = socket.handshake.query.Token;
+	socket.join(newjoin);
+
 	function showusers(){
 		console.clear();
 		var socketsOn = [];
@@ -34,7 +37,7 @@ io.on('connection', function(socket) {
 	});
 
 	socket.on('Package', (newpackage)=>{
-		io.emit('Package', newpackage);
+		io.to(newjoin).emit('Package', newpackage);
 
 	});
 });
