@@ -15,11 +15,11 @@ var helmet = require('helmet');
 io.on('connection', function(socket) {
 	//include socket on JobId
 	var newjoin = socket.handshake.query.Token;
-	
-	if(socket.handshake.query.Auth == 'TWVWZ29PR3RNZ2hEVVVSQ1dZZEs3QT09'){
-		socket.join('ger:'+newjoin);
-	};
+	var auth = socket.handshake.query.Auth;
+
+	socket.join(newjoin+auth);
 	socket.join(newjoin);
+
 	//socketsOn.push({user: socket.handshake.query.Login, socket: socket});
 	var user = socket.handshake.query.Login;
 	socketsOn.push({user: user, socket: socket});
@@ -57,7 +57,7 @@ io.on('connection', function(socket) {
 
 		} else if ($data.event == 'managers-direct') {
 
-			io.to('ger:'+newjoin).emit('Package', $data);
+			io.to($data.TokenTo$data+newjoin).emit('Package', $data);
 
 		} else {
 	
