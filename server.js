@@ -18,27 +18,38 @@ io.on('connection', function(socket) {
 	socket.join(newjoin);
 	//socketsOn.push({user: socket.handshake.query.Login, socket: socket});
 	var user = socket.handshake.query.Login;
-	socketsOn[user] = socket;
+	socketsOn.push({user: user, socket: socket});
+	// var user = socket.handshake.query.Login;
+	// socketsOn[user] = socket;
+
 
 	  console.clear();
-	  console.log(Object.keys(io.sockets.adapter.rooms));
-	  console.log(Object.keys(socketsOn));
+	  console.log('Rooms =>'+Object.keys(io.sockets.adapter.rooms));
+	  for (var i = socketsOn.length - 1; i >= 0; i--) {
+		  console.log(socketsOn[i].user);
+	  }
 
     socket.on('disconnect', function() {
 
-      socketsOn.splice(socketsOn.indexOf(socket), 1);
+      socketsOn.splice(socket, 1);
 
 	  console.clear();
-	  console.log(Object.keys(io.sockets.adapter.rooms));
-	  console.log(Object.keys(socketsOn));
+	  console.log('Rooms =>'+Object.keys(io.sockets.adapter.rooms));
+	  for (var i = socketsOn.length - 1; i >= 0; i--) {
+		  console.log(socketsOn[i].user);
+	  }
 	      
 	});
 
 	socket.on('Package', ($data)=>{
 		if ($data.event == 'direct') {
-
-			var cli = $data.to;
-				socketsOn[cli].emit('Package', $data);
+			  for (var i = socketsOn.length - 1; i >= 0; i--) {
+				  if (socketsOn[i].user == $data.to) {				  	
+					var cli = socketsOn[i].socket;
+						cli.emit('Package', $data);
+					break;
+				  }
+			  }
 
 		} else {
 	
