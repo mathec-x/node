@@ -56,8 +56,9 @@ io.on('connection', function(socket) {
 			  }
 
 		} else if ($data.event == 'managers-direct') {
-
-			io.to($data.TokenTo$data+newjoin).emit('Package', $data);
+			var managers = newjoin+$data.TokenTo;
+			console.log(managers);
+			io.to(managers).emit('Package', $data);
 
 		} else {
 	
