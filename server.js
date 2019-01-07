@@ -1,7 +1,7 @@
 var app= require('express')();
 var http=require('http').Server(app);
 var io = require('socket.io')(http);
-var port = process.env.PORT || 3000;
+var port = process.env.PORT || 5000;
 var socketsOn = [];
 
 
@@ -15,16 +15,10 @@ var helmet = require('helmet');
 io.on('connection', function(socket) {
 	//include socket on JobId
 	var newjoin = socket.handshake.query.Token;
-	var auth = socket.handshake.query.Auth;
-
-	socket.join(newjoin+auth);
 	socket.join(newjoin);
 
-	//socketsOn.push({user: socket.handshake.query.Login, socket: socket});
 	var user = socket.handshake.query.Login;
 	socketsOn.push({user: user, socket: socket});
-	// var user = socket.handshake.query.Login;
-	// socketsOn[user] = socket;
 
 
 	  console.clear();
@@ -46,24 +40,27 @@ io.on('connection', function(socket) {
 	});
 
 	socket.on('Package', ($data)=>{
-		if ($data.event == 'direct') {
+		if ($data.direct) {
+	
 			  for (var i = socketsOn.length - 1; i >= 0; i--) {
-				  if (socketsOn[i].user == $data.to) {				  	
+				  if (socketsOn[i].user == $data.direct) {				  	
+					console.log(user +' Enviou para: ' + $data.direct);
 					var cli = socketsOn[i].socket;
-						cli.emit('Package', $data);
+
+						 cli.emit('Package', $data);
+			
 					break;
+				  } else {
+
+				  	 console.log(user +' Enviou para: ' + $data.direct + ' usuário estava deslogado');
+
 				  }
 			  }
 
-		} else if ($data.event == 'managers-direct') {
-			var managers = newjoin+$data.TokenTo;
-			console.log(managers);
-			io.to(managers).emit('Package', $data);
-
-		} else {
-	
+		} else {	
+		
 			io.to(newjoin).emit('Package', $data);
-			
+			console.log(user +' Enviou a todos');
 		}
 
 	});
