@@ -5,7 +5,6 @@ var port = process.env.PORT || 5000;
 var socketsOn = [];
 var connections = [];
 
-
 //ONLY FOR SECURITY
 //npm install --save helmet
 var helmet = require('helmet');
@@ -13,35 +12,43 @@ var helmet = require('helmet');
 
 io.on('connection', function(socket) {
 	//include socket on JobId
-	var newjoin = socket.handshake.query.Token;
+	var myroom = socket.handshake.query.Token;
 	// join into new group
-	socket.join(newjoin);
+	socket.join(myroom);
 	//catch user login on the querystring
 	var user = socket.handshake.query.Login;
 	//verify if user is present
 	if (socketsOn[user]) {
 		console.log('Duplicate user '+ user);
 		socketsOn[user].emit('Package', {io: 'Duplicate', user: user});
-		socketsOn.splice(socketsOn[user], 0);
+//		socketsOn.splice(socketsOn[user], 0);
 	}
 	//store user by login and self sokcet id
 		socketsOn[user] = socket;
-		    // console.clear(); console.log('Rooms =>'+Object.keys(io.sockets.adapter.rooms));
-			connections = Object.keys(socketsOn)
-
-			    // emit user when new connection
-				io.to(newjoin).emit('Package', {io: 'New', user: user, online: connections});
-				console.clear();console.log(connections);
-				//console.log(user +' Conectou');
+			connections.push({job: myroom, user: user});
+			var senduserson = [];
+			for (var i = connections.length - 1; i >= 0; i--) {
+				if (connections[i].job == myroom) {
+					senduserson.push(connections[i].user);
+				}
+			}
+	    // emit user when new connection
+		io.to(myroom).emit('Package', {io: 'New', user: user, online: senduserson});
+		console.clear();
+		console.log(senduserson);
+		console.log(user +' Conectou');
 	
     // emit disconect client
     socket.on('disconnect', function() {
-	    delete socketsOn[user];
-			connections = Object.keys(socketsOn);
-			    // emit users when new disconnetcion
-				//console.clear();console.log(connections);
+			for (var i = connections.length - 1; i >= 0; i--) {
+				if (connections[i].user == user) {
+					 connections.splice(i, 1);
+				}
+			}
+				console.clear();
+				console.log(connections);
 				console.log(user +' desconectou');
-		   				 io.to(newjoin).emit('Package', {io: 'Disconnect', user: user});	      
+		   				 io.to(myroom).emit('Package', {io: 'Disconnect', user: user});	      
 	});
 
     // chamada a cada interação da tela
@@ -54,7 +61,7 @@ io.on('connection', function(socket) {
 
 		} else {	
 			// se não envia para todos
-			io.to(newjoin).emit('Package', $data);
+			io.to(myroom).emit('Package', $data);
 				console.log(user +' Enviou a todos');
 		}
 
