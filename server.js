@@ -54,10 +54,20 @@ io.on('connection', function(socket) {
     // chamada a cada interação da tela
 	socket.on('Package', ($data)=>{
 		if ($data.direct) {
+			//se colocar return quero receber o emit
+			if ($data.return) socket.emit('Package', $data);
 			// se existir um atributo direct
 			var cli = socketsOn[$data.direct];
+
+			if (cli) {
 			    cli.emit('Package', $data);
-				    console.log('direct to ' + cli);
+			    console.log('direct to ' + cli);
+				return false;			
+			} else {
+			    socket.emit('TargetDisconnected', $data.direct);
+			    console.log('direct to disconnected' + cli);
+			    return false;		
+			}
 
 		} else {	
 			// se não envia para todos
