@@ -22,7 +22,7 @@ io.on('connection', function(socket) {
 			  port: '587',
 			  secure: false,
 			  auth: {
-			    user: 'noreplay@'+socket.handshake.query.Host+'.com.br',
+			    user: 'noreplay@'+socket.handshake.query.Host,
 			    pass: socket.handshake.query.Hash
 			  },
 			  tls: { rejectUnauthorized: false }
