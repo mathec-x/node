@@ -18,7 +18,7 @@ io.on('connection', function(socket) {
 	if (socket.handshake.query.Host) {
 		//console.log('Host', socket.handshake.query.Host, socket.handshake.query.Hash);		
 		var transporter = nodemailer.createTransport({
-			  host: 'mail.'+socket.handshake.query.Host+'.com.br',
+			  host: 'mail.'+socket.handshake.query.Host,
 			  port: '587',
 			  secure: false,
 			  auth: {
@@ -27,19 +27,6 @@ io.on('connection', function(socket) {
 			  },
 			  tls: { rejectUnauthorized: false }
 			});
-		if (socket.handshake.query.MailTo) {
-			  var mailOptions = {
-				  from : 'noreplay@'+socket.handshake.query.Host+'.com.br',
-				  subject : socket.handshake.query.Subject,
-				  to : socket.handshake.query.MailTo,
-				  text : '',
-				  html: socket.handshake.query.Html
-			  };
-				transporter.sendMail(mailOptions, (error, info) => {
-				  if (error) { console.log(error); } 
-				  else 		 { console.log('Email sent:', socket.handshake.query.MailTo); }
-				});
-		}
 	}
 
 	//include socket on JobId
@@ -83,7 +70,7 @@ io.on('connection', function(socket) {
 		if ($data.maillist) {
 			if ($data.maillist.length < 1) return false;
 			$data.maillist.forEach(function (to, i , array) {
-			  mailOptions.from = 'noreplay@'+socket.handshake.query.Host+'.com.br';
+			  mailOptions.from = 'noreplay@'+socket.handshake.query.Host;
 			  mailOptions.subject = $data.subject;
 			  mailOptions.to = to;
 			  mailOptions.text = $data.message;
