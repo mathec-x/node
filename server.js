@@ -15,14 +15,16 @@ io.on('connection', function(socket) {
 		console.log('Test MailTo still not implements', data);
 		//io.to(myroom).emit('RootScope', $data);
 	})	
+
 	if (socket.handshake.query.Host) {
+		var host = socket.handshake.query.Host;
 		//console.log('Host', socket.handshake.query.Host, socket.handshake.query.Hash);		
 		var transporter = nodemailer.createTransport({
-			  host: 'mail.'+socket.handshake.query.Host,
+			  host: 'mail.'+host,
 			  port: '587',
 			  secure: false,
 			  auth: {
-			    user: 'noreplay@'+socket.handshake.query.Host,
+			    user: 'noreply@'+host,
 			    pass: socket.handshake.query.Hash
 			  },
 			  tls: { rejectUnauthorized: false }
@@ -69,13 +71,14 @@ io.on('connection', function(socket) {
 		// SEND MAILS
 		if ($data.maillist) {
 			if ($data.maillist.length < 1) return false;
+			var mailOptions = [];
 			$data.maillist.forEach(function (to, i , array) {
-			  mailOptions.from = 'noreplay@'+socket.handshake.query.Host;
+			  mailOptions.from = 'noreply@'+host;
 			  mailOptions.subject = $data.subject;
 			  mailOptions.to = to;
 			  mailOptions.text = $data.message;
 				transporter.sendMail(mailOptions, function(error, info){
-				  if (error) { console.log(error); } 
+				  if (error) { console.log('noreply@'+host,error); } 
 				  else 		 { console.log('Email sent: ' + $data.subject, $data.message,to); }
 				});
 			});
