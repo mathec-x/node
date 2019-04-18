@@ -10,15 +10,9 @@ var helmet = require('helmet');
 	app.use(helmet());
 
 io.on('connection', function(socket) {
-	//SERVER CALL
-	socket.on('MailTo', function (data)  {
-		console.log('Test MailTo still not implements', data);
-		//io.to(myroom).emit('RootScope', $data);
-	})	
-
+	console.clear();
 	if (socket.handshake.query.Host) {
 		var host = socket.handshake.query.Host;
-		//console.log('Host', socket.handshake.query.Host, socket.handshake.query.Hash);		
 		var transporter = nodemailer.createTransport({
 			  host: 'mail.'+host,
 			  port: '587',
@@ -31,10 +25,16 @@ io.on('connection', function(socket) {
 			});
 	}
 
+	if (socket.handshake.query.Syb) {
+		var subGroup = socket.handshake.query.Syb;		
+			socket.join(subGroup);
+	}
+
+
 	//include socket on JobId
-	var myroom = socket.handshake.query.Token;
+	var mainGroup = socket.handshake.query.Token;
 	// join into new group
-	socket.join(myroom);
+	socket.join(mainGroup);
 	//catch user login on the querystring
 	var user = socket.handshake.query.Login;
 	//verify if user is present
@@ -45,25 +45,25 @@ io.on('connection', function(socket) {
 	}
 		//store user by login and self sokcet id
 		socketsOn[user] = socket;	
-			connections.push({job: myroom, user: user});
+			connections.push({job: mainGroup, user: user});
 
 			var senduserson = [];
 			for (var i = connections.length - 1; i >= 0; i--) {
-				if (connections[i].job == myroom) {
+				if (connections[i].job == mainGroup) {
 					senduserson.push(connections[i].user);
 				}
 			}
 	    // emit user when new connection
-		io.to(myroom).emit('Package', {io: 'New', user: user, online: senduserson});
+		io.to(mainGroup).emit('Package', {io: 'New', user: user, online: senduserson});
 		//console.clear();
 		console.log(senduserson);
-		console.log(user +' Conectou');
+		//console.log(user +' Conectou');
 	
     // emit disconect client
     socket.on('disconnect', function() {
 	 	connections.splice(connections.indexOf(user), 1);
 			console.log(user +' desconectou');
-	   				 io.to(myroom).emit('Package', {io: 'Disconnect', user: user});
+	   				 io.to(mainGroup).emit('Package', {io: 'Disconnect', user: user});
 	});
 
     // ZEUS CALL
@@ -84,27 +84,30 @@ io.on('connection', function(socket) {
 			});
 			return false;
 		}
-		//SEND DIRECT 
-		// THIS THE PRINCIPAL, OR IS DIRECT OR NOT
-		//  IF DIRECT OR RETURN OR NOT
 		if ($data.direct) {
-			if ($data.return) socket.emit('Package', $data);
-	
-			var cli = socketsOn[$data.direct];
-			if (cli) {
-			    cli.emit('Package', $data);
-			    console.log('direct to ' + cli);
-				return false;			
-			} else {
-			    socket.emit('Package', {io: 'TargetDisconnected', user: $data.direct});
-			    console.log('direct to disconnected ' + $data.direct);
-			    return false;		
-			}
+			
+			if ($data.return) 
+				socket.emit('Package', $data);	
 
-		} else {
-			//SEND To ALL
-			io.to(myroom).emit('Package', $data);
-				console.log(user +' Enviou a todos de ' + myroom);
+			if (socketsOn[$data.direct]) 
+			    socketsOn[$data.direct].emit('Package', $data);
+			else 
+			    socket.emit('Package', {io: 'TargetDisconnected', user: $data.direct});
+			
+			return;
+		}
+
+		else if ($data.Syb) {
+			if ($data.Syb != subGroup) socket.emit('Package', $data);
+			io.in($data.Syb).emit('Package', $data);
+			console.log(user +' Enviou de '+ subGroup +' ao subgrupo ' + $data.Syb);
+			return;
+		}
+
+		else {
+			io.to(mainGroup).emit('Package', $data);
+			console.log(user +' Enviou a todos de ' + mainGroup);
+			return;
 		}
 	});
 
