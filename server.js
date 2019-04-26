@@ -14,7 +14,7 @@ app.get('/sendmail', function(req, res) {
 	var transporter = nodemailer.createTransport({
 	    host: req.query.host,
 	    port: 587,
-	    secure: true,
+	    secure: false,
 	    auth: {
 	        user: req.query.sender, // Your email id
 	        pass: req.query.pass // Your password
