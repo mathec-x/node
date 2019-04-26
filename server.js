@@ -1,36 +1,53 @@
 var app= require('express')();
 var http=require('http').Server(app);
 var io = require('socket.io')(http);
-var port = process.env.PORT || 5000;
 var nodemailer = require('nodemailer');
+var port = process.env.PORT || 5000;
 var socketsOn = [];
 var connections = [];
 //ONLY FOR SECURITY //npm install --save helmet
 var helmet = require('helmet');
 	app.use(helmet());
 
+// example of routing in node
+app.get('/sendmail', function(req, res) {
+	var transporter = nodemailer.createTransport({
+	    host: req.query.host,
+	    port: 587,
+	    secure: false,
+	    auth: {
+	        user: req.query.sender, // Your email id
+	        pass: req.query.pass // Your password
+	    },
+	    tls: {
+	        rejectUnauthorized: false
+	    }
+	});
+    var mailOptions = {
+        from: 'noreply <'+req.query.sender+'>',
+        to: req.query.user,
+        subject: req.query.subject,
+        text: req.query.html,
+        html:  req.query.html
+    };
+    transporter.sendMail(mailOptions, function(error, info){
+        if(error){
+        	console.log(error);
+            res.send(false);
+        } else {
+        	console.log('Email sent');
+            res.send(true);
+        }
+    });  
+    return false;
+});
+
 io.on('connection', function(socket) {
 	console.clear();
-	if (socket.handshake.query.Host) {
-		var host = socket.handshake.query.Host;
-		var transporter = nodemailer.createTransport({
-			  host: 'mail.'+host,
-			  port: '587',
-			  secure: false,
-			  auth: {
-			    user: 'noreply@'+host,
-			    pass: socket.handshake.query.Hash
-			  },
-			  tls: { rejectUnauthorized: false }
-			});
-	}
-
 	if (socket.handshake.query.Syb) {
 		var subGroup = socket.handshake.query.Syb;		
 			socket.join(subGroup);
 	}
-
-
 	//include socket on JobId
 	var mainGroup = socket.handshake.query.Token;
 	// join into new group
@@ -63,29 +80,12 @@ io.on('connection', function(socket) {
     socket.on('disconnect', function() {
 	 	connections.splice(connections.indexOf(user), 1);
 			console.log(user +' desconectou');
-	   				 io.to(mainGroup).emit('Package', {io: 'Disconnect', user: user});
+	   			io.to(mainGroup).emit('Package', {io: 'Disconnect', user: user});
 	});
 
     // ZEUS CALL
 	socket.on('Package', ($data) => {
-		// SEND MAILS
-		if ($data.maillist) {
-			if ($data.maillist.length < 1) return false;
-			var mailOptions = [];
-			$data.maillist.forEach(function (to, i , array) {
-			  mailOptions.from = 'noreply@'+host;
-			  mailOptions.subject = $data.subject;
-			  mailOptions.to = to;
-			  mailOptions.text = $data.message;
-				transporter.sendMail(mailOptions, function(error, info){
-				  if (error) { console.log('noreply@'+host,error); } 
-				  else 		 { console.log('Email sent: ' + $data.subject, $data.message,to); }
-				});
-			});
-			return false;
-		}
-		if ($data.direct) {
-			
+		if ($data.direct) {			
 			if ($data.return) 
 				socket.emit('Package', $data);	
 
@@ -96,7 +96,6 @@ io.on('connection', function(socket) {
 			
 			return;
 		}
-
 		else if ($data.Syb) {
 			if ($data.Syb != subGroup) socket.emit('Package', $data);
 			io.in($data.Syb).emit('Package', $data);
