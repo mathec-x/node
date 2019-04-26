@@ -14,7 +14,7 @@ app.get('/sendmail', function(req, res) {
 	var transporter = nodemailer.createTransport({
 	    host: req.query.host,
 	    port: 587,
-	    secure: false,
+	    secure: true,
 	    auth: {
 	        user: req.query.sender, // Your email id
 	        pass: req.query.pass // Your password
@@ -43,7 +43,6 @@ app.get('/sendmail', function(req, res) {
 });
 
 io.on('connection', function(socket) {
-	console.clear();
 	if (socket.handshake.query.Syb) {
 		var subGroup = socket.handshake.query.Syb;		
 			socket.join(subGroup);
@@ -57,13 +56,12 @@ io.on('connection', function(socket) {
 	//verify if user is present
 	if (socketsOn[user]) {
 		console.log('Duplicate user '+ user);
-		socketsOn.splice(socketsOn.indexOf(user), 1);
 		socketsOn[user].emit('Package', {io: 'Duplicate', user: user});
+	//	socketsOn.splice(socketsOn.indexOf(user), 1);
 	}
 		//store user by login and self sokcet id
 		socketsOn[user] = socket;	
 			connections.push({job: mainGroup, user: user});
-
 			var senduserson = [];
 			for (var i = connections.length - 1; i >= 0; i--) {
 				if (connections[i].job == mainGroup) {
@@ -78,9 +76,15 @@ io.on('connection', function(socket) {
 	
     // emit disconect client
     socket.on('disconnect', function() {
-	 	connections.splice(connections.indexOf(user), 1);
-			console.log(user +' desconectou');
-	   			io.to(mainGroup).emit('Package', {io: 'Disconnect', user: user});
+			for (var i = connections.length - 1; i >= 0; i--) {
+				if (connections[i].user == user) {
+					 connections.splice(i, 1);
+				}
+			}
+				console.clear();
+				console.log(connections);
+				console.log(user +' desconectou');
+		   				 io.to(mainGroup).emit('Package', {io: 'Disconnect', user: user});	      
 	});
 
     // ZEUS CALL
