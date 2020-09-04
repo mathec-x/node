@@ -41,7 +41,7 @@ app.get('/sendmail', function(req, res) {
     });  
     return false;
 });
-io.set('origins', ['ciclomundo.tecnologia.ws','cicloinsight.com.br:*','cifconsultoria.com.br:*', 'localhost:70']);
+io.set('origins', ['ciclomundo.tecnologia.ws:*','cicloinsight.com.br:*','cifconsultoria.com.br:*', 'localhost:70']);
 //io.origins(['http://cicloinsight.com.br:*','https://cicloinsight.com.br:*', 'http://localhost:70']);
 io.on('connection', function(socket) {
 	if (socket.handshake.query.Syb) {
