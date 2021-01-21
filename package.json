@@ -13,7 +13,7 @@
 		"express": "^4.16.3",
 		"helmet": "^3.15.0",
 		"nodemailer": "^5.1.1",
-		"socket.io": "^2.1.1"
+		"socket.io": "^2.4.0"
 	},
 	"scripts": {
 		"starts": "server.js",
